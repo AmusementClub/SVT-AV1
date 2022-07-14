@@ -152,6 +152,8 @@
 #define ENABLE_RESTORATION_TOKEN "--enable-restoration"
 #define MFMV_ENABLE_NEW_TOKEN "--enable-mfmv"
 #define FAST_DECODE_TOKEN "--fast-decode"
+#define DISALLOW_BELOW_TOKEN "--disallow-below"
+#define LPD_MODE_TOKEN "--lpd-mode"
 #define HDR_INPUT_NEW_TOKEN "--enable-hdr"
 #define ADAPTIVE_QP_ENABLE_NEW_TOKEN "--aq-mode"
 #define INPUT_FILE_LONG_TOKEN "--input"
@@ -545,6 +547,12 @@ static void set_enable_mfmv_flag(const char *value, EbConfig *cfg) {
 };
 static void set_fast_decode_flag(const char *value, EbConfig *cfg) {
     cfg->config.fast_decode = (Bool)strtol(value, NULL, 0);
+};
+static void set_disallow_below_flag(const char *value, EbConfig *cfg) {
+    cfg->config.disallow_below = (Bool)strtol(value, NULL, 0);
+};
+static void set_lpd_mode_flag(const char *value, EbConfig *cfg) {
+    cfg->config.lpd_mode = (Bool)strtol(value, NULL, 0);
 };
 static void set_tile_row(const char *value, EbConfig *cfg) {
     cfg->config.tile_rows = strtoul(value, NULL, 0);
@@ -1182,6 +1190,14 @@ ConfigEntry config_entry_specific[] = {
      FAST_DECODE_TOKEN,
      "Fast Decoder levels, default is 0 [0-1]",
      set_fast_decode_flag},
+    {SINGLE_INPUT,
+     DISALLOW_BELOW_TOKEN,
+     "Adjust Disallow Below levels, default is 0 [0-1]",
+     set_disallow_below_flag},
+    {SINGLE_INPUT,
+     LPD_MODE_TOKEN,
+     "Adjust Lpd1 mode, default is 0 [0-1]",
+     set_lpd_mode_flag},
     // --- start: ALTREF_FILTERING_SUPPORT
     {SINGLE_INPUT,
      ENABLE_TF_TOKEN,
@@ -1465,6 +1481,8 @@ ConfigEntry config_entry[] = {
     {SINGLE_INPUT, ENABLE_TPL_LA_TOKEN, "EnableTPLModel", set_enable_tpl_la},
     {SINGLE_INPUT, MFMV_ENABLE_NEW_TOKEN, "Mfmv", set_enable_mfmv_flag},
     {SINGLE_INPUT, FAST_DECODE_TOKEN, "FastDecode", set_fast_decode_flag},
+    {SINGLE_INPUT, DISALLOW_BELOW_TOKEN, "DisallowBelow", set_disallow_below_flag},
+    {SINGLE_INPUT, LPD_MODE_TOKEN, "LpdMode", set_lpd_mode_flag},
     {SINGLE_INPUT, TUNE_TOKEN, "Tune", set_tune},
     //   ALT-REF filtering support
     {SINGLE_INPUT, ENABLE_TF_TOKEN, "EnableTf", set_enable_tf},

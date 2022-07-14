@@ -474,6 +474,45 @@ EbErrorType svt_av1_verify_settings(SequenceControlSet *scs_ptr) {
         return_error = EB_ErrorBadParameter;
     }
 
+    if (config->disallow_below > 1) {
+        SVT_ERROR(
+            "Instance %u: Invalid disallow below flag [0 - 1, 0 for no disallow below 16x16 changes], your "
+            "input: %d\n",
+            channel_number + 1,
+            config->disallow_below);
+        return_error = EB_ErrorBadParameter;
+    }
+
+    if (config->lpd_mode > 1) {
+        SVT_ERROR(
+            "Instance %u: Invalid lpd mode flag [0 - 1, 0 for no lpd1 level changes], your "
+            "input: %d\n",
+            channel_number + 1,
+            config->lpd_mode);
+        return_error = EB_ErrorBadParameter;
+    }
+
+    // If the set disallow below value is in the allowable range, check that the value is supported for the current preset.
+    // If the value is valid, but not supported in the current preset, change the value to one that is supported.
+    if (config->disallow_below == 1) {
+        if (config->enc_mode <= ENC_M10 || config->enc_mode >= ENC_M13) {
+            SVT_WARN("The disallow below option is not supported in M%d.\n", config->enc_mode);
+            SVT_WARN("Disallow below adjustment is only supported in presets M11-M12.\n");
+            SVT_WARN("Switching off disallow below adjustment.\n");
+            config->disallow_below = 0;
+        }
+    }
+    // If the set lpd level value is in the allowable range, check that the value is supported for the current preset.
+    // If the value is valid, but not supported in the current preset, change the value to one that is supported.
+    if (config->lpd_mode == 1) {
+        if (config->enc_mode <= ENC_M10 || config->enc_mode >= ENC_M13) {
+            SVT_WARN("The lpd1 mode option is not supported in M%d.\n", config->enc_mode);
+            SVT_WARN("Lpd1 mode adjustment is only supported in presets M11-M12.\n");
+            SVT_WARN("Switching off lpd1 mode adjustment.\n");
+            config->lpd_mode = 0;
+        }
+    }
+
     if (config->tune > 1) {
         SVT_ERROR(
             "Instance %u: Invalid tune flag [0 - 1, 0 for VQ and 1 for PSNR], your input: %d\n",
@@ -881,6 +920,8 @@ EbErrorType svt_av1_set_default_params(EbSvtAv1EncConfiguration *config_ptr) {
     config_ptr->enable_restoration_filtering = DEFAULT;
     config_ptr->enable_mfmv                  = DEFAULT;
     config_ptr->fast_decode                  = 0;
+    config_ptr->disallow_below               = 0;
+    config_ptr->lpd_mode                     = 0;
     memset(config_ptr->pred_struct, 0, sizeof(config_ptr->pred_struct));
     config_ptr->enable_manual_pred_struct    = FALSE;
     config_ptr->manual_pred_struct_entry_num = 0;
@@ -1727,6 +1768,8 @@ EB_API EbErrorType svt_av1_enc_parse_parameter(EbSvtAv1EncConfiguration *config_
         {"enable-dlf", &config_struct->enable_dlf_flag},
         {"rmv", &config_struct->restricted_motion_vector},
         {"enable-tf", &config_struct->enable_tf},
+        {"disallow-below", &config_struct->disallow_below},
+        {"lpd-mode", &config_struct->lpd_mode},
         {"enable-overlays", &config_struct->enable_overlays},
         {"enable-hdr", &config_struct->high_dynamic_range_input},
         {"fast-decode", &config_struct->fast_decode},

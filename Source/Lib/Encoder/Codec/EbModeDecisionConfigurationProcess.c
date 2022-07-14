@@ -37,7 +37,8 @@ uint8_t get_bypass_encdec(EncMode enc_mode, uint8_t hbd_mode_decision, uint8_t e
 uint8_t get_disallow_below_16x16_picture_level(EncMode enc_mode, EbInputResolution resolution,
                                                SliceType slice_type, uint8_t sc_class1,
                                                uint8_t is_used_as_reference_flag,
-                                               uint8_t temporal_layer_index);
+                                               uint8_t temporal_layer_index,
+                                               Bool disallow_token);
 
 #define MAX_MESH_SPEED 5 // Max speed setting for mesh motion method
 static MeshPattern good_quality_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
@@ -918,7 +919,8 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(SequenceControlSet 
         slice_type,
         ppcs->sc_class1,
         pcs_ptr->parent_pcs_ptr->is_used_as_reference_flag,
-        pcs_ptr->temporal_layer_index);
+        pcs_ptr->temporal_layer_index,
+        scs_ptr->static_config.disallow_below);
 
     if (scs_ptr->super_block_size == 64) {
         if (is_islice || transition_present) {
@@ -1057,16 +1059,30 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(SequenceControlSet 
         pcs_ptr->pic_lpd1_lvl = is_ref ? 0 : 1;
     else if (enc_mode <= ENC_M10)
         pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 2;
-    else if (enc_mode <= ENC_M11)
-        pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 3;
-    else if (enc_mode <= ENC_M12)
-        pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 4;
-    else {
-        if (input_resolution <= INPUT_SIZE_1080p_RANGE &&
-            scs_ptr->static_config.encoder_bit_depth == EB_EIGHT_BIT)
-            pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 6;
-        else
+    else if (scs_ptr->static_config.lpd_mode == 0) {
+        if (enc_mode <= ENC_M11)
+            pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 3;
+        else if (enc_mode <= ENC_M12)
             pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 4;
+        else {
+            if (input_resolution <= INPUT_SIZE_1080p_RANGE &&
+                scs_ptr->static_config.encoder_bit_depth == EB_EIGHT_BIT)
+                pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 6;
+            else
+                pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 4;
+        }
+    } else {
+        if (enc_mode <= ENC_M11)
+            pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 2;
+        else if (enc_mode <= ENC_M12)
+            pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 3;
+        else {
+            if (input_resolution <= INPUT_SIZE_1080p_RANGE &&
+                scs_ptr->static_config.encoder_bit_depth == EB_EIGHT_BIT)
+                pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 6;
+            else
+                pcs_ptr->pic_lpd1_lvl = is_base ? 0 : 4;
+        }
     }
 
     // Can only use light-PD1 under the following conditions

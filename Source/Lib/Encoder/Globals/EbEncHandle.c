@@ -1523,6 +1523,7 @@ EB_API EbErrorType svt_av1_enc_init(EbComponentType *svt_enc_component)
                                             enc_handle_ptr->scs_instance_array[instance_index]->scs_ptr->vq_ctrls.sharpness_ctrls.scene_transition;
         input_data.tpl_lad_mg = enc_handle_ptr->scs_instance_array[instance_index]->scs_ptr->tpl_lad_mg;
         input_data.input_resolution = enc_handle_ptr->scs_instance_array[instance_index]->scs_ptr->input_resolution;
+        input_data.disallow_token = enc_handle_ptr->scs_instance_array[instance_index]->scs_ptr->static_config.disallow_below;
 
         EB_NEW(
             enc_handle_ptr->picture_parent_control_set_pool_ptr_array[instance_index],
@@ -3784,6 +3785,9 @@ void copy_api_from_app(
             scs_ptr->static_config.fast_decode = 0;
         }
     }
+
+    scs_ptr->static_config.disallow_below = ((EbSvtAv1EncConfiguration*)config_struct)->disallow_below;
+    scs_ptr->static_config.lpd_mode = ((EbSvtAv1EncConfiguration*)config_struct)->lpd_mode;
 
     //Film Grain
     scs_ptr->static_config.film_grain_denoise_strength = ((EbSvtAv1EncConfiguration*)config_struct)->film_grain_denoise_strength;

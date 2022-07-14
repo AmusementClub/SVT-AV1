@@ -4565,26 +4565,44 @@ static void set_detect_high_freq_ctrls(ModeDecisionContext* ctx, uint8_t detect_
 uint8_t get_disallow_below_16x16_picture_level(EncMode enc_mode, EbInputResolution resolution,
                                                SliceType slice_type, uint8_t sc_class1,
                                                uint8_t is_used_as_reference_flag,
-                                               uint8_t temporal_layer_index) {
+                                               uint8_t temporal_layer_index,
+                                               Bool disallow_token) {
     uint8_t disallow_below_16x16 = 0;
 
     if (sc_class1)
         disallow_below_16x16 = 0;
     else if (enc_mode <= ENC_M8)
         disallow_below_16x16 = 0;
-    else if (enc_mode <= ENC_M9)
+    else if (enc_mode <= ENC_M9) {
         if (resolution <= INPUT_SIZE_1080p_RANGE)
             disallow_below_16x16 = is_used_as_reference_flag ? 0 : 1;
         else {
             disallow_below_16x16 = (slice_type == I_SLICE) ? 0 : 1;
         }
-    else if (enc_mode <= ENC_M11)
-        disallow_below_16x16 = (resolution <= INPUT_SIZE_480p_RANGE)
+    }
+    else if (disallow_token == 0) {
+        if (enc_mode <= ENC_M11)
+            disallow_below_16x16 = (resolution <= INPUT_SIZE_480p_RANGE)
             ? (temporal_layer_index == 0 ? 0 : 1)
             : ((slice_type == I_SLICE) ? 0 : 1);
-
-    else
-        disallow_below_16x16 = (slice_type == I_SLICE) ? 0 : 1;
+        else
+            disallow_below_16x16 = (slice_type == I_SLICE) ? 0 : 1;
+    }
+    else {
+        if (enc_mode <= ENC_M11) {
+            if (resolution <= INPUT_SIZE_1080p_RANGE)
+                disallow_below_16x16 = is_used_as_reference_flag ? 0 : 1;
+            else {
+                disallow_below_16x16 = (slice_type == I_SLICE) ? 0 : 1;
+            }
+        }
+        else if (enc_mode <= ENC_M12)
+            disallow_below_16x16 = (resolution <= INPUT_SIZE_480p_RANGE)
+            ? (temporal_layer_index == 0 ? 0 : 1)
+            : ((slice_type == I_SLICE) ? 0 : 1);
+        else
+            disallow_below_16x16 = (slice_type == I_SLICE) ? 0 : 1;
+    }
 
     return disallow_below_16x16;
 }

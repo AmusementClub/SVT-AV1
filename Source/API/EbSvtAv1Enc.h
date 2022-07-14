@@ -614,6 +614,18 @@ typedef struct EbSvtAv1EncConfiguration {
     */
     Bool fast_decode;
 
+    /* Adjust disallow_below_16x16 for bit distortion
+    * 0: No adjustments
+    * 1: Use preceding level for disallow_below_16x16 e.g. M12 will use M11 level
+    */
+    Bool disallow_below;
+
+    /* Adjust pic_lpd1_lvl for bit distortion
+    * 0: No adjustments
+    * 1: Use preceding level for pic_lpd1_lvl e.g. M12 will use M11 level
+    */
+    Bool lpd_mode;
+
     /* S-Frame interval (frames)
     * 0: S-Frame off
     * >0: S-Frame on and indicates the number of frames after which a frame may be coded as an S-Frame

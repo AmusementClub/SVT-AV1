@@ -1138,6 +1138,7 @@ typedef struct PictureControlSetInitData {
     uint8_t reduce_me_search;
     uint8_t input_resolution;
     uint8_t calculate_variance;
+    Bool disallow_token;
 } PictureControlSetInitData;
 
 typedef struct Av1Comp {
