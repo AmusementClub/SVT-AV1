@@ -60,7 +60,7 @@ jobs:
       run: mkdir -p bld
     - name: Compile
       run: |
-        cmake -GNinja -B bld -DREPRODUCIBLE_BUILDS=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DTARGET_CPU=${{matrix.target_cpu}}
+        cmake -GNinja -B bld -DREPRODUCIBLE_BUILDS=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DSVT_AV1_LTO=ON -DTARGET_CPU=${{matrix.target_cpu}}
         ninja -C bld
     - name: Package
       run: |
