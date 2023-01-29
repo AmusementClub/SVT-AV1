@@ -49,6 +49,8 @@ if(USE_EXTERNAL_CPUINFO)
     find_package(cpuinfo CONFIG REQUIRED)
 endif()
 
+set(TARGET_CPU generic CACHE STRING "The target CPU")
+
 include(CheckCSourceCompiles)
 
 check_c_source_compiles("
@@ -334,6 +336,8 @@ else()
     option(NATIVE "Build for native performance (march=native)" OFF)
     if(NATIVE)
         check_both_flags_add(-march=native)
+    else()
+        check_both_flags_add(-march=${TARGET_CPU})
     endif()
     if(MINGW)
         check_both_flags_add(-mxsave -fno-asynchronous-unwind-tables)

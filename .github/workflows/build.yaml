@@ -1,0 +1,90 @@
+name: Build
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'which tag to upload to'
+        default: ''
+
+jobs:
+  build:
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: msys2 {0}
+    strategy:
+      matrix:
+        target_cpu:
+        - x86-64
+        - ivybridge
+        - haswell
+        - skylake
+        - alderlake
+        - bdver4
+        - znver1
+        - znver2
+        - znver3
+        toolchain:
+        - clang
+        #- ucrt
+    steps:
+    - name: Parse matrix
+      run: |
+        if ("${{matrix.toolchain}}" -eq "clang") {
+          echo "MSYSTEM=CLANG64" >> $env:GITHUB_ENV
+        } else {
+          echo "MSYSTEM=UCRT64" >> $env:GITHUB_ENV
+        }
+      shell: pwsh
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{env.MSYSTEM}}
+        update: true
+        install: >-
+          p7zip
+          base-devel
+          mingw-w64-${{matrix.toolchain}}-x86_64-nasm
+          mingw-w64-${{matrix.toolchain}}-x86_64-toolchain
+          mingw-w64-${{matrix.toolchain}}-x86_64-cmake
+          mingw-w64-${{matrix.toolchain}}-x86_64-ninja
+    - name: Get rid of .dll.a
+      run: find /*64/ /usr/ -type f -name "*.dll.a" -print -delete
+    - name: Setup build dir
+      run: mkdir -p bld
+    - name: Compile
+      run: |
+        cmake -GNinja -B bld -DREPRODUCIBLE_BUILDS=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DTARGET_CPU=${{matrix.target_cpu}}
+        ninja -C bld
+    - name: Package
+      run: |
+        mkdir dist
+        cp Bin/Release/*.exe dist
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: svtav1-win64-${{matrix.target_cpu}}-${{matrix.toolchain}}-full
+        path: dist/*
+
+    - name: Compress artifact for release
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.tag != ''
+      run: |
+        cd dist
+        # do not release profiling binary
+        7za a -t7z -mx=7 ../svtav1-win64-${{matrix.target_cpu}}-${{matrix.toolchain}}.${{ github.event.inputs.tag }}.7z SvtAv1EncApp.exe
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.tag != ''
+      with:
+        tag_name: ${{ github.event.inputs.tag }}
+        files: svtav1-win64-${{matrix.target_cpu}}-${{matrix.toolchain}}.${{ github.event.inputs.tag }}.7z
+        fail_on_unmatched_files: true
+        generate_release_notes: false
+        prerelease: true
