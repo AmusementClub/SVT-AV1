@@ -41,6 +41,7 @@ if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 option(COMPILE_C_ONLY "Compile only C code with no simds (autodetect, default off for x86)" OFF)
+set(TARGET_CPU generic CACHE STRING "The target CPU")
 
 include(CheckCSourceCompiles)
 
@@ -313,6 +314,8 @@ else()
     option(NATIVE "Build for native performance (march=native)" OFF)
     if(NATIVE)
         check_both_flags_add(-march=native)
+    else()
+        check_both_flags_add(-march=${TARGET_CPU})
     endif()
     if(MINGW)
         check_both_flags_add(-mxsave -fno-asynchronous-unwind-tables)
