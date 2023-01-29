@@ -1812,7 +1812,7 @@ EB_API EbErrorType svt_av1_enc_parse_parameter(EbSvtAv1EncConfiguration *config_
         {"pin", &config_struct->pin_threads},
         {"fps-num", &config_struct->frame_rate_numerator},
         {"fps-denom", &config_struct->frame_rate_denominator},
-        {"lookahead", &config_struct->look_ahead_distance},
+        //{"lookahead", &config_struct->look_ahead_distance},
         {"scd", &config_struct->scene_change_detection},
         {"max-qp", &config_struct->max_qp_allowed},
         {"min-qp", &config_struct->min_qp_allowed},
@@ -1911,6 +1911,7 @@ EB_API EbErrorType svt_av1_enc_parse_parameter(EbSvtAv1EncConfiguration *config_
         {"tile-columns", &config_struct->tile_columns},
         {"ss", &config_struct->target_socket},
         {"sframe-dist", &config_struct->sframe_dist},
+        {"lookahead", &config_struct->look_ahead_distance}, // must allow -1
     };
     const size_t int_opts_size = sizeof(int_opts) / sizeof(int_opts[0]);
 
