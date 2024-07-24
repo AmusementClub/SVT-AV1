@@ -22,10 +22,12 @@ jobs:
         - haswell
         - skylake
         - alderlake
+        - raptorlake
         - bdver4
         - znver1
         - znver2
         - znver3
+        - znver4
         toolchain:
         - clang
         #- ucrt
